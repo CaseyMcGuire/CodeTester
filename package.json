@@ -1,0 +1,23 @@
+{
+  "name": "CodeTester",
+  "version": "1.0.0",
+  "description": "Queries database for ungraded code submissions, grades them, and then writes them back to database",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CaseyMcGuire/CodeTester"
+  },
+  "author": "Casey McGuire",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CaseyMcGuire/CodeTester/issues"
+  },
+  "homepage": "https://github.com/CaseyMcGuire/CodeTester",
+  "dependencies": {
+    "sqlite3": "^3.0.4"
+  }
+}
