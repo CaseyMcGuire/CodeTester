@@ -12,14 +12,6 @@ var db = new sqlite3.Database(file);
 db.serialize(function(){
     //just prints all ungraded submissions
     db.each("SELECT * FROM submissions WHERE completed = 'f'", function(err, row){
-	//things I need to do here RIGHT NOW:
-	//run each submission
-	//if it runs, write pass back to the database
-	//if it doesn't run, write fail back to the database
-	//at some point I probably want to spawn off child processes...
-	
-	//at some point, this will need to get more complicated
-	
 
 	var filename = "scripts/" + Math.random()*100000 + ".py";
 	fs.writeFile(filename, row.code, function(err){
@@ -48,18 +40,17 @@ db.serialize(function(){
 	    
 	});
 	console.log(row);
-//	sleep(5);	    
+
     });
 });
 
 
 //close the database
-sleep(5);
+
 //db.close();
 
 
-//I *think* this will block the thread until the amount of time passed as a parameter is complete
-//Note this is hogging the CPU and is a *really* bad idea in the long run but its fine for now
+//Not very efficient but okay for now
 function sleep(seconds){
 
     var endTime = new Date().getTime() + (seconds * 1000);
