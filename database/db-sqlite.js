@@ -24,11 +24,17 @@ Database.prototype.getUngradedSubmissions = function(){
 	db.each("SELECT * FROM submissions WHERE completed = 'f'", function(err, row){
 	    if(err) return err;
 	    //Python is okay at first
-	    var filename = "scripts/" + util.getRandomString() + ".py";
-	    fs.writeFile(filename, row.code);
-	    
+	    var curFilename = "scripts/" + util.getRandomString() + ".py";
+	    fs.writeFile(curFilename, row.code);
+	    arr.push({
+		id: row.id,
+		filename: curFilename
+	    });
+	    //need to update database to say that submission is being graded
+
 	});
     });
+    return arr;
 }
 
 /*
