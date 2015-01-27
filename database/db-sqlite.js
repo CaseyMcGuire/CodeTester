@@ -16,15 +16,18 @@ var Database = function(filename){
   @return {array} An array of strings that are the file names of the submissions.
 */
 Database.prototype.getUngradedSubmissions = function(){
-    var fs = require('fs');
+    var fs = require('fs');  
+    var util = require('./CodeTester/lib/util');
     var arr = [];
     
     this.db.serialize(function(){
 	db.each("SELECT * FROM submissions WHERE completed = 'f'", function(err, row){
 	    if(err) return err;
-	    //write a file
+	    //Python is okay at first
+	    var filename = "scripts/" + util.getRandomString() + ".py";
+	    fs.writeFile(filename, row.code);
 	    
-	}
+	});
     });
 }
 
