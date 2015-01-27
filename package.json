@@ -17,8 +17,9 @@
     "url": "https://github.com/CaseyMcGuire/CodeTester/issues"
   },
   "homepage": "https://github.com/CaseyMcGuire/CodeTester",
-  "dependencies": {
-    "sqlite3": "^3.0.4",
-      "dockerode": "2.0.6"
+    "dependencies": {
+	"sqlite3": "^3.0.4",
+	"dockerode": "2.0.6",
+	"node-uuid": "1.4.2"
   }
 }
