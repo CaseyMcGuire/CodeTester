@@ -1,4 +1,7 @@
+/*
+  The Sqlite database should be used for testing on localhost and not in production.
 
+*/
 
 var Database = function(filename){
     if(!filename) throw "no filename";
@@ -12,38 +15,38 @@ var Database = function(filename){
 /*
   Queries the database for ungraded submissions, writes them to filesystem, and 
   returns an array containing the filenames of the submissions.
-
-  @return {array} An array of strings that are the file names of the submissions.
 */
-Database.prototype.getUngradedSubmissions = function(){
+Database.prototype.getUngradedSubmissions = function(callback){
     var fs = require('fs');  
     var util = require('./CodeTester/lib/util');
-    var arr = [];
-    
+   
+    //do queries serially (as opposed to in parallel)
     this.db.serialize(function(){
 	db.each("SELECT * FROM submissions WHERE completed = 'f'", function(err, row){
-	    if(err) return err;
+	    if(err) callback(err);
 	    //Python is okay at first
-	    var curFilename = "scripts/" + util.getRandomString() + ".py";
-	    fs.writeFile(curFilename, row.code);
-	    arr.push({
-		id: row.id,
-		filename: curFilename
+	    var filename = "scripts/" + util.getRandomString() + ".py";
+	    fs.writeFile(filename, row.code, function(err){
+		if(err) callback(err);
+		callback(null, row.id, filename);
 	    });
+	    
 	    //need to update database to say that submission is being graded
-
+	   
 	});
     });
-    return arr;
+
 }
 
 /*
   Store the result of the tests back into the database.
 
-  @param {float} The id of the problem in the database.
-  @param {float} The id of the result
+  @param {Number} The id of the problem in the database.
+  @param {Number} The id of the result
  */
 Database.prototype.store = function(id, result){
+
+    
     
 }
 
