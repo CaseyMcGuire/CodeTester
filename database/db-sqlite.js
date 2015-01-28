@@ -34,9 +34,7 @@ Database.prototype.getUngradedSubmissions = function(callback){
 		if(err) callback(err);
 		callback(null, row.id, filename);
 	    });
-	    
-	    //need to update database to say that submission is being graded
-	   
+	    	   
 	});
     });
 
@@ -49,7 +47,7 @@ Database.prototype.getUngradedSubmissions = function(callback){
   @param {Number} The id of the result
  */
 Database.prototype.store = function(id, result){
-
+    console.log("store was called");
     
     
 }
