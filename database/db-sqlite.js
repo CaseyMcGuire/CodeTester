@@ -4,12 +4,13 @@
 */
 
 var Database = function(filename){
+    
     if(!filename) throw "no filename";
     var fs = require('fs');
-    if(!fs.existsSync(file)) throw "no such file";
+    if(!fs.existsSync(filename)) throw "no such file";
     
     var sqlite3 = require("sqlite3").verbose();
-    this.db = new sqlite3.Database(file);
+    this.db = new sqlite3.Database(filename);
 }
 
 /*
@@ -18,11 +19,14 @@ var Database = function(filename){
 */
 Database.prototype.getUngradedSubmissions = function(callback){
     var fs = require('fs');  
-    var util = require('./CodeTester/lib/util');
+    var util = require('../lib/util');
+    
+    var database = this.db;
    
     //do queries serially (as opposed to in parallel)
-    this.db.serialize(function(){
-	db.each("SELECT * FROM submissions WHERE completed = 'f'", function(err, row){
+    database.serialize(function(){
+	database.each("SELECT * FROM submissions WHERE completed = 'f'", function(err, row){
+	   
 	    if(err) callback(err);
 	    //Python is okay at first
 	    var filename = "scripts/" + util.getRandomString() + ".py";
@@ -57,4 +61,4 @@ Database.prototype.close = function(){
     this.db.close();
 }
 
-module.exports.sqlite = Database;
+module.exports.Database = Database;
