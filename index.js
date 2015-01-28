@@ -8,12 +8,10 @@ var main = function(){
     var test = require('./lib/tester');
     
     var db = new database.Database(file);
-    var tester = new test.Tester();
-    console.log(tester);
-    db.getUngradedSubmissions(tester.start);
-    setTimeout(function(){
-	console.log("wake up time!");
-    }, 10000);
+    db.getUngradedSubmissions(function(x, id, filename){
+	var tester = new test.Tester();
+	tester.start(x, id, filename);
+    });
     db.close();
     console.log('all done');
 }
