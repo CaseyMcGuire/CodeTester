@@ -12,12 +12,19 @@ var main = function(){
 
 function run(database){
     var test = require('./lib/tester');
-    database.runQuery("SELECT * FROM submissions WHERE completed = 'f'", function getCode(err, row){
+    //Get all ungraded submissions from the database
+    database.runQuery("SELECT * FROM submissions WHERE completed = 'f'", function prepareCode(err, row){
 	var util = require('./lib/util');
-	util.writeCodeToFile(row, function(err, row, filename){
+	
+	//write the code to a file and then run it
+	util.writeCodeToFile(row, function runCode(err, row, filename){
+
 	    if(err) throw err;
 	    var tester = new test.Tester();
-	    tester.start(row.id, filename, function(err){
+
+	    tester.start(filename, function(err, stdout, stderr){
+		console.log("stdout: " + stdout);
+		console.log("stderr: " + stderr);
 		if(err) throw err;
 		database.store();
 	    });

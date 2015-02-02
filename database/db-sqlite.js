@@ -14,31 +14,21 @@ var Database = function(filename){
 }
 
 /*
-  Queries the database for ungraded submissions, writes them to filesystem, and 
-  returns an array containing the filenames of the submissions.
+  Queries the database with the given command.
+
+  @param{String} The database query in SQL 
+  @param{Function} A function that is called with the results of the query as a parameter
 */
 Database.prototype.runQuery = function(query, callback){
-    var fs = require('fs');  
-    var util = require('../lib/util');
-    
     var database = this.db;
    
     //do queries serially (as opposed to in parallel)
     database.serialize(function(){
-	database.each(query, function(err, row){
+	database.each(query, function(err, data){
 	    if(err) callback(err);
-	    callback(null, row);
-	    //Python is okay at first
-	    /*
-	    var filename = "scripts/" + util.getRandomString() + ".py";
-	    fs.writeFile(filename, row.code, function(err){
-		if(err) callback(err);
-		callback(null, row.id, filename);
-	    });
-	    */	    	   
+	    callback(null, data);
 	});
     });
-
 }
 
 /*
