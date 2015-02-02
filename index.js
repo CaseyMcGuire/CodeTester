@@ -12,11 +12,15 @@ var main = function(){
 
 function run(database){
     var test = require('./lib/tester');
-    database.getUngradedSubmissions(function(err, id, filename){
-	var tester = new test.Tester();
-	tester.start(err, id, filename, function(err){
+    database.runQuery("SELECT * FROM submissions WHERE completed = 'f'", function getCode(err, row){
+	var util = require('./lib/util');
+	util.writeCodeToFile(row, function(err, row, filename){
 	    if(err) throw err;
-	    database.store();
+	    var tester = new test.Tester();
+	    tester.start(row.id, filename, function(err){
+		if(err) throw err;
+		database.store();
+	    });
 	});
     });
 

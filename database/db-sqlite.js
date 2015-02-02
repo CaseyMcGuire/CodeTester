@@ -17,7 +17,7 @@ var Database = function(filename){
   Queries the database for ungraded submissions, writes them to filesystem, and 
   returns an array containing the filenames of the submissions.
 */
-Database.prototype.getUngradedSubmissions = function(callback){
+Database.prototype.runQuery = function(query, callback){
     var fs = require('fs');  
     var util = require('../lib/util');
     
@@ -25,16 +25,17 @@ Database.prototype.getUngradedSubmissions = function(callback){
    
     //do queries serially (as opposed to in parallel)
     database.serialize(function(){
-	database.each("SELECT * FROM submissions WHERE completed = 'f'", function(err, row){
-	   
+	database.each(query, function(err, row){
 	    if(err) callback(err);
+	    callback(null, row);
 	    //Python is okay at first
+	    /*
 	    var filename = "scripts/" + util.getRandomString() + ".py";
 	    fs.writeFile(filename, row.code, function(err){
 		if(err) callback(err);
 		callback(null, row.id, filename);
 	    });
-	    	   
+	    */	    	   
 	});
     });
 
@@ -46,10 +47,8 @@ Database.prototype.getUngradedSubmissions = function(callback){
   @param {Number} The id of the problem in the database.
   @param {Number} The id of the result
  */
-Database.prototype.store = function(id, result){
+Database.prototype.store = function(row, result){
     console.log("store was called");
-    
-    
 }
 
 /*
