@@ -12,7 +12,7 @@ var main = function(){
 function run(database){
     var test = require('./lib/tester');
     //Get all ungraded submissions from the database
-    database.runQuery("SELECT * FROM submissions WHERE completed = 'f'", function prepareCode(err, row){
+    database.each("SELECT * FROM submissions WHERE completed = 'f'", function prepareCode(err, row){
 	var util = require('./lib/util');	
 	//write the code to a file and then run it
 	util.writeCodeToFile(row, function runCode(err, row, filename){

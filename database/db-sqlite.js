@@ -14,12 +14,12 @@ var Database = function(filename){
 }
 
 /*
-  Queries the database with the given command.
+  Runs the passed the query and passes each row to the callback function.
 
   @param{String} The database query in SQL 
-  @param{Function} A function that is called with the results of the query as a parameter
+  @param{Function} A function that is called for each row.
 */
-Database.prototype.runQuery = function(query, callback){
+Database.prototype.each = function(query, callback){
     var database = this.db;
 
     database.parallelize(function(){
