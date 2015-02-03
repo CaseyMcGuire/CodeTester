@@ -21,13 +21,9 @@ var Database = function(filename){
 */
 Database.prototype.runQuery = function(query, callback){
     var database = this.db;
-   
-    //do queries serially (as opposed to in parallel)
-    database.serialize(function(){
-	database.each(query, function(err, data){
-	    if(err) callback(err);
-	    callback(null, data);
-	});
+
+    database.parallelize(function(){
+	database.each(query, callback);
     });
 }
 
