@@ -1,5 +1,5 @@
 /*
-  This file begins the application
+  This file begins the application.
 */
 
 var main = function(){
