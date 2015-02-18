@@ -1,5 +1,5 @@
 /*
-  The Sqlite database should be used for testing on localhost and not in production.
+  A simple wrapper for the sqlite module.
 
 */
 
@@ -30,11 +30,18 @@ Database.prototype.each = function(query, callback){
 /*
   Store the result of the tests back into the database.
 
-  @param {Number} The id of the problem in the database.
-  @param {Number} The id of the result
+  
  */
-Database.prototype.store = function(row, result){
-    console.log("store was called");
+Database.prototype.run= function(query, params, callback){
+    this.db.run(query, params, callback);
+}
+
+/*
+
+
+*/
+Database.prototype.storeResult = function(params, callback){
+    console.log("storeResult was called");
 }
 
 /*

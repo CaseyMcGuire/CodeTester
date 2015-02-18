@@ -24,7 +24,7 @@ function run(database){
 		console.log("stdout: " + stdout);
 		console.log("stderr: " + stderr);
 		if(err) throw err;
-		database.store();
+		database.storeResult();
 	    });
 	});
     });
