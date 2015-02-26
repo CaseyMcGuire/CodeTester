@@ -17,25 +17,33 @@ function run(database){
 	//write the code to a file and then run it
 	util.writeCodeToFile(row, function runCode(err, row, filename){
 
-	    if(err) throw err;
+	    if(err)console.log(err);// throw err;
 	    var tester = new test.Tester();
 
 	    tester.start(filename, function(err, stdout, stderr){
 		console.log("stdout: " + stdout);
 		console.log("stderr: " + stderr);
-		if(err) throw err;
-		database.storeResult();
+		if(err)  console.log(err); //throw err;
+		database.run("UPDATE submissions SET completed = ? where id = ?", ['t', row.id], function(err){
+		    if(err) console.log("There was an error");
+		    else console.log("There was NO error");
+		});
 	    });
 	});
     });
 
     //restart every 10000 milliseconds
     setTimeout(function(){
+	console.log("calling run again");
 	run(database);
+	
     }, 10000);
 
 }
 
+/*
+  Main method for node.
+*/
 if(require.main === module){
     main();
 }
