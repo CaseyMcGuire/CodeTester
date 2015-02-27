@@ -36,13 +36,6 @@ Database.prototype.run= function(query, params, callback){
     this.db.run(query, params, callback);
 }
 
-/*
-
-
-*/
-Database.prototype.storeResult = function(params, callback){
-    console.log("storeResult was called");
-}
 
 /*
   Closes the database connection.
