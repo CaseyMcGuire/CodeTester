@@ -24,7 +24,7 @@ function run(database){
 		console.log("stdout: " + stdout);
 		console.log("stderr: " + stderr);
 		if(err)  console.log(err); //throw err;
-		database.run("UPDATE submissions SET completed = ? where id = ?", ['t', row.id], function(err){
+		database.run("UPDATE submissions SET completed = ?, status_id = ? where id = ?", ['t',2, row.id], function(err){
 		    if(err) console.log("There was an error");
 		    else console.log("There was NO error");
 		});
