@@ -5,18 +5,24 @@ if(require.main === module){
 
 function main(){
     var request = require('request');
-    getUngradedSubmission(request, function(error, body){
-	console.log(body);
+    var async = require('async');
+    async.waterfall([
+	function(callback){
+	    getUngradedSubmission(callback);
+	},
+	function(body, callback){
+	    postResult(body.submission_id, callback);
+	}
+    ], function(err){
+	console.log("all done");
     });
 }
-
-
 
 /*
   
  */
-function getUngradedSubmission(request, callback){
-    request({
+function getUngradedSubmission(callback){
+    require('request')({
 	uri: 'http://localhost:3000/submission/get_ungraded',
 	json: true
     }, function(error, response, body){
@@ -25,8 +31,8 @@ function getUngradedSubmission(request, callback){
     });
 }
 
-function postResult(request, submission_id, request, callback){
-    request({
+function postResult(submission_id, callback){
+    require('request')({
 	method: 'POST',
 	uri: 'http://localhost:3000/submission/update/' + submission_id,
 	json: true,
