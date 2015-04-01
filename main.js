@@ -15,7 +15,21 @@ function main(){
 	function(body, callback){
 	    util.writeCodeToFile(body, callback);
 	},
+	function(body, folderName, callback){
+	   
+	    require('child_process').exec('node ' + folderName + '/run.js ' + folderName, function(error, stdout, stderr){
+		if(error) console.log(error);
+		else {
+		    console.log('we are in the callback');
+		    console.log(stdout);
+
+		}
+		callback(null, body);
+	    });
+	   	   
+	},
 	function(body, callback){
+	    
 	    postResult(body.submission_id, callback);
 	}
     ], function(err){
