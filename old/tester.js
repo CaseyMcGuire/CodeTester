@@ -8,7 +8,7 @@ var Tester = function(){
 }
 
 
-Tester.prototype.start = function(filename, callback){
+Tester.prototype.start = function(runCommand, filename, callback){
     //probably want to use async series here but this is fine for now
     var options = {
 	timeout: 500,
@@ -17,7 +17,7 @@ Tester.prototype.start = function(filename, callback){
     }
 
     console.log(filename);
-    this.exec("python " + filename, options, function(error, stdout, stderr){
+    this.exec(runCommand + " " + filename, options, function(error, stdout, stderr){
 	if(error){
 	    console.log(error);
 	  //  return;// callback(error);   

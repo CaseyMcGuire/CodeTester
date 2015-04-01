@@ -6,9 +6,14 @@ if(require.main === module){
 function main(){
     var request = require('request');
     var async = require('async');
+    var util = require('./lib/util');	
+
     async.waterfall([
 	function(callback){
 	    getUngradedSubmission(callback);
+	},
+	function(body, callback){
+	    util.writeCodeToFile(body, callback);
 	},
 	function(body, callback){
 	    postResult(body.submission_id, callback);

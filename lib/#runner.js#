@@ -1,0 +1,12 @@
+var PythonRunner = function(){
+    this.runCommand = "python";
+    this.fileExtension = ".py";
+}
+
+var runner = function(){
+    var tester = require('./lib/tester').Tester();
+    var pythonRunner = new PythonRunner();
+    tester.start(pythonRunner.runCommand, "submission" + pythonRunner.fileExtension, function(){console.log("here we go!")});
+
+}
+
