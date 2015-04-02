@@ -3,8 +3,15 @@ var fse = require('fs-extra');//a module that adds a little more functionality t
 var request = require('request');
 var async = require('async');
 var child_process = require('child_process');
+var Docker = require('dockerode');
+
+var get_uri;
+var post_uri;
 
 if(require.main === module){
+    
+    get_uri = process.argv[2];
+    post_uri = process.argv[3];
     main();
 }
 
@@ -20,15 +27,19 @@ function main(){
 	},
 	//execute it.
 	function(body, folderName, callback){
-	   
-	    child_process.exec('node ' + folderName + '/run.js ' + folderName, function(error, stdout, stderr){
+	   var options = {
+	       cwd : folderName
+	   }
+	    child_process.exec('node ' + 'run.js', options, function(error, stdout, stderr){
 		if(error) console.log(error);
 		else {
 		    console.log(stdout);    
 		}
 		callback(null, body, stdout);
 	    });
-	   	   
+	},
+	function(body, stdout, callback){
+	    callback(null, body, stdout);
 	},
 	//post the result back to server
 	function(body, stdout, callback){
@@ -65,7 +76,7 @@ function writeToFile(obj, callback){
 	var runnerFileName = folderName + '/run.js';
 	//I have to pass a fake callback otherwise async won't call 
 	    //the last callback
-	require('async').parallel([
+	async.parallel([
 	    function(cb){
 		fs.writeFile(submissionFileName, obj.code);
 		cb(null);
@@ -82,12 +93,12 @@ function writeToFile(obj, callback){
 		fs.writeFile(outputFileName, obj.output);
 		cb(null);
 	    },function(cb){
-		require('fs-extra').copy('lib/run.js', runnerFileName, function(err){
+		fse.copy('lib/run.js', runnerFileName, function(err){
 		    if(err) console.log(err);
 		    else console.log('no problem');
 		});
 		cb(null);
-		}
+	    }
 	],function(err, results){
 	    //	console.log("here we are");
 	    if(err) callback(err);
@@ -105,7 +116,9 @@ function get(callback){
 	json: true
     }, function(error, response, body){
 	if(error) callback(error);
-	else callback(null, body);//console.log(body);
+	console.log(response);
+	console.log(body);
+	callback(null, body);//console.log(body);
     });
 }
 
