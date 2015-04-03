@@ -35,10 +35,18 @@ function main(){
 		else {
 		    console.log(stdout);    
 		}
-		callback(null, body, stdout);
+		callback(null, body, stdout, folderName);
 	    });
 	},
-	function(body, stdout, callback){
+	//delete the temp directory
+	function(body, stdout, folderName, callback){
+	    console.log(folderName);
+	    if(folderName.substring(0, 8) === "scripts/"){
+		fse.remove(folderName, function(err){
+		    if(err) console.log("there was an error deleting the directory");
+		});
+	    }
+	    
 	    callback(null, body, stdout);
 	},
 	//post the result back to server
@@ -145,6 +153,7 @@ function post(submission_id, message, callback){
   Returns a random string without hyphens.
 */
 function getRandomString(){
+    //the regex bit gets rid of the dashes in the string
     return require('node-uuid').v4().toString().replace(/-/g, '').toLowerCase();
 }
     
