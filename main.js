@@ -177,11 +177,18 @@ function getProgrammingLanguageExtension(languageName){
 }
 
 function setup(callback){
- 
     child_process.exec('docker create ubuntu:latest', function(error, stdout, stderr){
 	if(error || stderr) callback(new Error("Sandbox was not setup correctly"));
 	callback(null, stdout);
     }); 
+}
+
+function run(callback){
+
+}
+
+function kill(callback){
+
 }
 
 /*
