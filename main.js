@@ -10,9 +10,13 @@ var post_uri;
 
 if(require.main === module){
     
-    get_uri = process.argv[2];
-    post_uri = process.argv[3];
-    main();
+  //  get_uri = process.argv[2];
+  //  post_uri = process.argv[3];
+   
+    setup (function(error, response){
+	console.log(response);
+    });
+   // main();
 }
 
 function main(){
@@ -30,12 +34,15 @@ function main(){
 	   var options = {
 	       cwd : folderName
 	   }
+
+	    
 	    child_process.exec('node ' + 'run.js', options, function(error, stdout, stderr){
-		if(error) console.log(error);
-		else {
-		    console.log(stdout);    
-		}
-		callback(null, body, stdout, folderName);
+		var result;
+		if(error) result = error;
+		else if (stderr) result = stderr;
+		else result = stdout;
+
+		callback(null, body, result, folderName);
 	    });
 	},
 	//delete the temp directory
@@ -168,3 +175,98 @@ function getProgrammingLanguageExtension(languageName){
     else if(languageName === "python") return ".py";
     else throw Error("invalid language name");
 }
+
+function setup(callback){
+ 
+    child_process.exec('docker create ubuntu:latest', function(error, stdout, stderr){
+	if(error || stderr) callback(new Error("Sandbox was not setup correctly"));
+	callback(null, stdout);
+    }); 
+}
+
+/*
+function setup(callback){
+    var docker = new Docker();
+    docker.createContainer({Image: 'ubuntu', Cmd : ['/bin/bash', 'ls'], name : 'secret'}, callback);
+}*/
+
+
+/*
+function setup(callback){
+   
+    var params = {
+	Hostname : "",
+	Domainname : "",
+	User : "",
+	Memory : 0,
+	MemorySwap : 0,
+	CpuShares : 512,
+	Cpuset : "0, 1",
+	AttachStdin : false,
+	AttachStdout : true,
+	AttachStderr : true,
+	Tty : false,
+	OpenStdin : false,
+	StdinOnce : false,
+	Env : null,
+	Cmd : [ "ls" ],
+	Entrypoint : "",
+	Image : "ubuntu:latest",
+	Volumes : {},
+	WorkingDir : "",
+	NetworkDisabled : true,
+	MacAddress : "",
+	ExposedPorts : {},
+	SecurityOpts : [""],
+	HostConfig : {
+	    Binds : null,
+	    Links : [""],
+	    LxcConf : {},
+	    PortBindings : {},
+	    PublishAllPorts : false,
+	    Privileged : false,
+	    ReadonlyRootfs : true,
+	    Dns : null,
+	    DnsSearch : null,
+	    ExtraHosts : null,
+	    VolumesFrom : [""],
+	    CapAdd : null,
+	    CapDrop : null,
+	    RestartPolicy : { "Name" : "", "MaximumRetryCount" : 0 },
+	    NetworkMode : "host",
+	    Devices : []
+	}
+    }
+
+    var params2 = {
+	Image : "ubuntu:latest",
+//	Cmd : ["/bin/bash", "ls"]
+    }
+
+    console.log(JSON.stringify(params2));
+
+    var queryString = {
+	name : "/secret"
+    }
+    
+    request({
+	method: 'POST',
+	uri: "http://unix:/var/run/docker.sock:/containers/create",
+	qs: queryString,
+	body: JSON.stringify(params2),// params,
+	json: true
+    }, function(error, response, body){
+	console.log("ALL DONE");
+	if(error) {
+	    console.log("there was an error");
+	    callback(error);
+	}
+	else{
+	    console.log("no error");
+	    console.log(response);
+	    console.log(body);
+	    callback(null, body);
+	}
+    });
+}
+*/
