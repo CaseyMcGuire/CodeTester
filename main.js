@@ -9,15 +9,23 @@ var get_uri;
 var post_uri;
 
 if(require.main === module){
+
+
+
     
   //  get_uri = process.argv[2];
   //  post_uri = process.argv[3];
    
+/*
     setup (function(error, response){
 	console.log(response);
     });
-   // main();
+*/
+   getBatchOfSubmissions(function(err, results){
+       console.log(results);
+   });
 }
+
 
 function main(){
     async.waterfall([
@@ -48,11 +56,14 @@ function main(){
 	//delete the temp directory
 	function(body, stdout, folderName, callback){
 	    console.log(folderName);
+		/*
+		  //lets stop this for the moment.
 	    if(folderName.substring(0, 8) === "scripts/"){
 		fse.remove(folderName, function(err){
 		    if(err) console.log("there was an error deleting the directory");
 		});
 	    }
+		*/
 	    
 	    callback(null, body, stdout);
 	},
@@ -62,6 +73,26 @@ function main(){
 	}
     ], function(err){
 	console.log("all done");
+    });
+}
+
+/*
+  Queries the server for three submissions and returns them in the callback.
+*/
+function getBatchOfSubmissions(callback){
+    async.series([
+	function(callback){
+	    get(callback);
+	},
+	function(callback){
+	    get(callback);
+	},
+	function(callback){
+	    get(callback);
+	}
+    ], function(err, results){
+	if(err) callback(err);
+	else callback(null, results);
     });
 }
 
@@ -79,7 +110,7 @@ function main(){
 function writeToFile(obj, callback){
   //  var fs = require('fs');
     var folderName = "scripts/" + getRandomString();
-   // var util = this;
+   
     fs.mkdir(folderName, function(){
 	    
 	var codeExtension = getProgrammingLanguageExtension(obj.language);
@@ -89,8 +120,9 @@ function writeToFile(obj, callback){
 	var inputFileName = folderName + "/input.txt";
 	var outputFileName = folderName + "/output.txt";
 	var runnerFileName = folderName + '/run.js';
+	var dockerFileName = folderName + "/DockerFile";
 	//I have to pass a fake callback otherwise async won't call 
-	    //the last callback
+	//the last callback
 	async.parallel([
 	    function(cb){
 		fs.writeFile(submissionFileName, obj.code);
@@ -109,10 +141,15 @@ function writeToFile(obj, callback){
 		cb(null);
 	    },function(cb){
 		fse.copy('lib/run.js', runnerFileName, function(err){
-		    if(err) console.log(err);
-		    else console.log('no problem');
+		    if(err) cb(err);
+		    else cb(null);
 		});
-		cb(null);
+		
+	    }, function(cb){
+		fse.copy('lib/DockerFile', dockerFileName, function(err){
+		    if(err) cb(err);
+		    else cb(null); 
+		});
 	    }
 	],function(err, results){
 	    //	console.log("here we are");
@@ -131,8 +168,8 @@ function get(callback){
 	json: true
     }, function(error, response, body){
 	if(error) callback(error);
-	console.log(response);
-	console.log(body);
+//	console.log(response);
+//	console.log(body);
 	callback(null, body);//console.log(body);
     });
 }
@@ -141,18 +178,15 @@ function get(callback){
   Post a result back to server.
 */
 function post(submission_id, message, callback){
-    console.log('submission_id');
-    console.log(submission_id);
-    console.log('message');
-    console.log(message);
     request({
 	method: 'POST',
 	uri: 'http://localhost:3000/submission/update/' + submission_id,
 	json: true,
 	body: {"result" : message}
     }, function(error, response, body){
-	if(error) console.log(error);
-	else console.log(body);
+//	if(error) console.log(error);
+//	else console.log(body);
+	callback(null);
     });
 }
 
@@ -176,8 +210,11 @@ function getProgrammingLanguageExtension(languageName){
     else throw Error("invalid language name");
 }
 
-function setup(callback){
-    child_process.exec('docker create ubuntu:latest', function(error, stdout, stderr){
+/*
+
+*/
+function setup(folderName, callback){
+    child_process.exec('docker create -v /Desktop/Projects/CS440/CodeTester/test:/temp ubuntu:latest /bin/bash', function(error, stdout, stderr){
 	if(error || stderr) callback(new Error("Sandbox was not setup correctly"));
 	callback(null, stdout);
     }); 
@@ -191,89 +228,3 @@ function kill(callback){
 
 }
 
-/*
-function setup(callback){
-    var docker = new Docker();
-    docker.createContainer({Image: 'ubuntu', Cmd : ['/bin/bash', 'ls'], name : 'secret'}, callback);
-}*/
-
-
-/*
-function setup(callback){
-   
-    var params = {
-	Hostname : "",
-	Domainname : "",
-	User : "",
-	Memory : 0,
-	MemorySwap : 0,
-	CpuShares : 512,
-	Cpuset : "0, 1",
-	AttachStdin : false,
-	AttachStdout : true,
-	AttachStderr : true,
-	Tty : false,
-	OpenStdin : false,
-	StdinOnce : false,
-	Env : null,
-	Cmd : [ "ls" ],
-	Entrypoint : "",
-	Image : "ubuntu:latest",
-	Volumes : {},
-	WorkingDir : "",
-	NetworkDisabled : true,
-	MacAddress : "",
-	ExposedPorts : {},
-	SecurityOpts : [""],
-	HostConfig : {
-	    Binds : null,
-	    Links : [""],
-	    LxcConf : {},
-	    PortBindings : {},
-	    PublishAllPorts : false,
-	    Privileged : false,
-	    ReadonlyRootfs : true,
-	    Dns : null,
-	    DnsSearch : null,
-	    ExtraHosts : null,
-	    VolumesFrom : [""],
-	    CapAdd : null,
-	    CapDrop : null,
-	    RestartPolicy : { "Name" : "", "MaximumRetryCount" : 0 },
-	    NetworkMode : "host",
-	    Devices : []
-	}
-    }
-
-    var params2 = {
-	Image : "ubuntu:latest",
-//	Cmd : ["/bin/bash", "ls"]
-    }
-
-    console.log(JSON.stringify(params2));
-
-    var queryString = {
-	name : "/secret"
-    }
-    
-    request({
-	method: 'POST',
-	uri: "http://unix:/var/run/docker.sock:/containers/create",
-	qs: queryString,
-	body: JSON.stringify(params2),// params,
-	json: true
-    }, function(error, response, body){
-	console.log("ALL DONE");
-	if(error) {
-	    console.log("there was an error");
-	    callback(error);
-	}
-	else{
-	    console.log("no error");
-	    console.log(response);
-	    console.log(body);
-	    callback(null, body);
-	}
-    });
-}
-*/
