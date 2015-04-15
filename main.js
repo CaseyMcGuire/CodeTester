@@ -3,7 +3,7 @@ var fse = require('fs-extra');//a module that adds a little more functionality t
 var request = require('request');
 var async = require('async');
 var child_process = require('child_process');
-var Docker = require('dockerode');
+//var Docker = require('dockerode');
 
 var get_uri;
 var post_uri;
@@ -15,17 +15,55 @@ if(require.main === module){
     
   //  get_uri = process.argv[2];
   //  post_uri = process.argv[3];
-   
-/*
-    setup (function(error, response){
-	console.log(response);
-    });
-*/
+
    getBatchOfSubmissions(function(err, results){
-       console.log(results);
+       async.parallel([
+	   function(callback){
+	       grade(results[0], callback);
+	   }
+       ], function(err, results){
+	   
+       });
    });
 }
 
+function grade(submission, _callback){
+    async.waterfall([
+	function(callback){
+	    writeToFile(submission, callback);
+	},
+	function(body, folderName, callback){
+	    setup(folderName, function(err){
+		callback(err, folderName);
+	    });
+	}, 
+	//can probably delete folder here actually....
+	function(folderName, callback){
+	    
+	    run(folderName.slice(8, folderName.length), function(err, process){
+		if(err) callback(err);
+		else callback(err, folderName, process);
+	    });
+	},
+	function(folderName, process, callback){
+	    
+	    process.stdout.on('data', function(data){
+		console.log('stdout: ' + data);
+	    });
+	    
+	    process.stderr.on('data', function(data){
+		console.log('stderr: ' + data);
+	    });
+
+	    process.on('close', function(code){
+		console.log('process closed! with error code: ' + code);
+		callback(null);
+	    });
+	}
+    ], function(err){
+	
+    });
+}
 
 function main(){
     async.waterfall([
@@ -120,7 +158,7 @@ function writeToFile(obj, callback){
 	var inputFileName = folderName + "/input.txt";
 	var outputFileName = folderName + "/output.txt";
 	var runnerFileName = folderName + '/run.js';
-	var dockerFileName = folderName + "/DockerFile";
+	var dockerFileName = folderName + "/Dockerfile";
 	//I have to pass a fake callback otherwise async won't call 
 	//the last callback
 	async.parallel([
@@ -146,7 +184,7 @@ function writeToFile(obj, callback){
 		});
 		
 	    }, function(cb){
-		fse.copy('lib/DockerFile', dockerFileName, function(err){
+		fse.copy('lib/Dockerfile', dockerFileName, function(err){
 		    if(err) cb(err);
 		    else cb(null); 
 		});
@@ -210,18 +248,20 @@ function getProgrammingLanguageExtension(languageName){
     else throw Error("invalid language name");
 }
 
-/*
-
-*/
 function setup(folderName, callback){
-    child_process.exec('docker create -v /Desktop/Projects/CS440/CodeTester/test:/temp ubuntu:latest /bin/bash', function(error, stdout, stderr){
-	if(error || stderr) callback(new Error("Sandbox was not setup correctly"));
-	callback(null, stdout);
-    }); 
+    var path = {cwd : folderName};
+    child_process.exec('docker build --force-rm=true --pull=false --rm=true -q -t caseymcguire/tester:' + folderName.slice(8, folderName.length) + ' .', path, function(error, stdout, stderr){
+	if(error) callback(error);
+	else if(stderr) callback(new Error(stderr));
+	else callback(null);
+    });
 }
 
-function run(callback){
-
+function run(name, callback){
+    var command = [
+	'docker', 'run', '--rm=true', 'caseymcguire/tester:' + name, 'nodejs', '/code/run.js'
+    ];
+    callback(null, child_process.spawn(command[0], command.splice(1, command.length - 1)));
 }
 
 function kill(callback){

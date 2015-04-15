@@ -1,2 +1,2 @@
-FROM caseymcguire/tester:v1
-ADD * /code
+FROM caseymcguire/tester:v2
+ADD * /code/
