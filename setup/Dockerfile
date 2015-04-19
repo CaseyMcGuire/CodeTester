@@ -9,3 +9,5 @@ RUN apt-get install -y python
 RUN apt-get install -y npm
 RUN apt-get install -y golang-go
 RUN apt-get install -y nodejs
+RUN apt-get install -y ghc
+RUN apt-get install -y default-jdk
