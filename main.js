@@ -53,6 +53,9 @@ function start(){
 		console.log('process closed! with error code: ' + code);
 
 		//I should probably use some sort of coding system instead of string literals
+		console.log("===============");
+		console.log(stdout);
+		console.log("===============");
 		stdout = stdout.slice(0, 4);
 		
 		console.log(stderr);
@@ -72,9 +75,11 @@ function start(){
 	    });
 	}
     ],function(err, id){
+
 	teardown(id, function(){
 	    console.log('all done!');
 	});
+	
     });
 
 }
@@ -210,6 +215,7 @@ function getProgrammingLanguageExtension(languageName){
     languageName = languageName.toLowerCase();
     if(languageName === "ruby") return ".rb";
     else if(languageName === "python") return ".py";
+    else if(languageName === "java") return ".java";
     else throw Error("invalid language name");
 }
 
@@ -224,7 +230,7 @@ function setup(obj, _callback){
 	    writeToFile(obj, id, callback);
 	},
 	function(callback){
-	    child_process.exec('docker build --force-rm=true --pull=false --rm=true -q -t caseymcguire/tester:' + id  + ' .', path, function(error, stdout, stderr){
+	    child_process.exec('docker build --force-rm=true --pull=false --rm=true -q -t caseymcguire/sandbox:' + id  + ' .', path, function(error, stdout, stderr){
 		if(error) callback(error);
 		else if(stderr) callback(new Error(stderr));
 		else callback(null);
@@ -238,13 +244,13 @@ function setup(obj, _callback){
 
 function run(id, callback){
     var command = [
-	'docker', 'run', '--rm=true', 'caseymcguire/tester:' + id, 'nodejs', '/code/run.js'
+	'docker', 'run', '--rm=true', 'caseymcguire/sandbox:' + id, 'nodejs', '/code/run.js'
     ];
     callback(null, child_process.spawn(command[0], command.splice(1, command.length - 1)));
 }
 
 function teardown(id, callback){
-    child_process.exec('docker rmi caseymcguire/tester:' + id, function(error, stdout, stderr){
+    child_process.exec('docker rmi caseymcguire/sandbox:' + id, function(error, stdout, stderr){
 	console.log(stdout);
 	console.log(error);
 	console.log(stderr);

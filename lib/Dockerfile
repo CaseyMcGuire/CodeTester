@@ -1,2 +1,2 @@
-FROM caseymcguire/tester:v2
+FROM caseymcguire/sandbox:v1
 ADD * /code/
