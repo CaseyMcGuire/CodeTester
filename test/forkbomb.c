@@ -1,6 +1,11 @@
+#include <stdio.h>
 #include <unistd.h>
+
 int main(void){
-  while(1){
+  int i = 1;
+  for(;;i++){
     fork();
+    printf("Forked %i children.\n", i);
   }
+  return 0;
 }
