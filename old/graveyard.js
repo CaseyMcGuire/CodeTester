@@ -138,3 +138,24 @@ function grade(submission, _callback){
 
     });
 }
+
+
+/*
+  Queries the server for three submissions and returns them in the callback.
+*/
+function getBatchOfSubmissions(callback){
+    async.series([
+	function(callback){
+	    get(callback);
+	},
+	function(callback){
+	    get(callback);
+	},
+	function(callback){
+	    get(callback);
+	}
+    ], function(err, results){
+	if(err) callback(err);
+	else callback(null, results);
+    });
+}

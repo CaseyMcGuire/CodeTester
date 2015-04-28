@@ -11,13 +11,10 @@ var PASS = 0, FAIL = 1, TIMEOUT = 2;
 
 
 if(require.main === module){
-    start();
+    query();
 }
 
-function start(){
-
-    var submission_id;//a dirty solution but okay for now
-
+function query(){
     async.waterfall([
 	function(callback){
 	    get(function(err, body){
@@ -26,12 +23,33 @@ function start(){
 		else callback(null, body);
 	    });
 	},
-	//setup
 	function(body, callback){
-	    submission_id = body.submission_id;
+	    var id = getRandomString();
+	    start(body, id, callback);
+	}
+    ], function(err, result){
+
+	var timeout;
+	if(err) timeout = 10000;
+	else timeout = 0;
+
+	setTimeout(function(){
+	    console.log("ALL DONE");//query();
+	    query();
+	}, timeout);
+    });
+}
+
+function start(body, id, callback){
+
+    var submission_id = body.submission_id;//a dirty solution but okay for now
+
+    async.waterfall([
+	//setup
+	function(callback){
 	    console.log('were setting up!');
 	    console.log(body);
-	    setup(body, callback);
+	    setup(body, id, callback);
 	},
 	function(id, callback){
 	    run(id, function(err, process){
@@ -54,6 +72,7 @@ function start(){
 
 		//I should probably use some sort of coding system instead of string literals
 		console.log("===============");
+		console.log("Standard out");
 		console.log(stdout);
 		console.log("===============");
 		stdout = stdout.slice(0, 4);
@@ -78,33 +97,12 @@ function start(){
 
 	teardown(id, function(){
 	    console.log('all done!');
+	    callback();
 	});
 	
     });
 
 }
-
-
-/*
-  Queries the server for three submissions and returns them in the callback.
-*/
-function getBatchOfSubmissions(callback){
-    async.series([
-	function(callback){
-	    get(callback);
-	},
-	function(callback){
-	    get(callback);
-	},
-	function(callback){
-	    get(callback);
-	}
-    ], function(err, results){
-	if(err) callback(err);
-	else callback(null, results);
-    });
-}
-
 
 
 /*
@@ -219,9 +217,10 @@ function getProgrammingLanguageExtension(languageName){
     else throw Error("invalid language name");
 }
 
-function setup(obj, _callback){
+function setup(obj, id, _callback){
 
-    var id = getRandomString();
+//    var id = getRandomString();
+    if(!id) var id = getRandomString();
 
     var path = {cwd : 'scripts/' +  id};
 
