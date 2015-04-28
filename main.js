@@ -7,7 +7,15 @@ var child_process = require('child_process');
 var get_uri;
 var post_uri;
 
-var PASS = 0, FAIL = 1, TIMEOUT = 2;
+var PASS = 0;
+var FAIL = 1;
+var TIMEOUT = 2;
+var RUNTIME_ERROR = 3;
+var COMPILE_ERROR = 4;
+
+var RESULT = {
+    "code" : -1
+}
 
 
 if(require.main === module){
@@ -42,7 +50,7 @@ function query(){
 
 function start(body, id, callback){
 
-    var submission_id = body.submission_id;//a dirty solution but okay for now
+    var submission_id = body.submission_id;
 
     async.waterfall([
 	//setup
@@ -54,36 +62,41 @@ function start(body, id, callback){
 	function(id, callback){
 	    run(id, function(err, process){
 		//always passes back null as err so no need to check
-	    var stdout = '';
-	    var stderr;
+		var stdout = '';
+		var stderr;
 
-	    //Need to timeout the docker container here as well...
-	    process.stdout.on('data', function(data){
-		stdout += data;
-	    });
-	    
-	    process.stderr.on('data', function(data){
-		if(stderr === undefined) stderr = '';
-		stderr += data;
-	    });
-
-	    process.on('close', function(code){
-		console.log('process closed! with error code: ' + code);
-
-		//I should probably use some sort of coding system instead of string literals
-		console.log("===============");
-		console.log("Standard out");
-		console.log(stdout);
-		console.log("===============");
-		stdout = stdout.slice(0, 4);
+		//kill the container after 10 seconds
+		var timeout = setTimeout(function(){
+		    kill(id, callback(new Error("timeout")));
+		}, 10000);
 		
-		console.log(stderr);
-		console.log(stdout === 'PASS');
-		console.log(stdout);
 		
-		if(stderr || stdout !== 'PASS') callback(null, id, FAIL);
-		else callback(null, id, PASS);
-	    });
+		process.stdout.on('data', function(data){
+		    stdout += data;
+		});
+		
+		process.stderr.on('data', function(data){
+		    if(stderr === undefined) stderr = '';
+		    stderr += data;
+		});
+
+		process.on('close', function(code){
+		    console.log('process closed! with error code: ' + code);
+		    clearTimeout(timeout);
+		    //I should probably use some sort of coding system instead of string literals
+		    console.log("===============");
+		    console.log("Standard out");
+		    console.log(stdout);
+		    console.log("===============");
+		    stdout = stdout.slice(0, 4);
+		    
+		    console.log(stderr);
+		    console.log(stdout === 'PASS');
+		    console.log(stdout);
+		    
+		    if(stderr || stdout !== 'PASS') callback(null, id, FAIL);
+		    else callback(null, id, PASS);
+		});
 		
 
 	    });
@@ -115,11 +128,11 @@ function start(body, id, callback){
   @param {Function} callback The callback
 */
 function writeToFile(obj, id, callback){
-  //  var fs = require('fs');
+    //  var fs = require('fs');
     var folderName = "scripts/" + id;
-   
+    
     fs.mkdir(folderName, function(){
-	    
+	
 	var codeExtension = getProgrammingLanguageExtension(obj.language);
 	
 	var submissionFileName = folderName + "/submission" +  codeExtension;
@@ -133,7 +146,7 @@ function writeToFile(obj, id, callback){
 	    function(cb){
 		fs.writeFile(submissionFileName, obj.code);
 		cb(null);
-		},
+	    },
 	    function(cb){
 		fs.writeFile(testCodeFileName, obj.test_code);
 		cb(null);
@@ -141,7 +154,7 @@ function writeToFile(obj, id, callback){
 	    function(cb){
 		fs.writeFile(inputFileName, obj.input);
 		cb(null);
-		},
+	    },
 	    function(cb){
 		fs.writeFile(outputFileName, obj.output);
 		cb(null);
@@ -167,15 +180,15 @@ function writeToFile(obj, id, callback){
 
 /*
   Get a submission from the server
- */
+*/
 function get(callback){
     request({
 	uri: 'http://localhost:3000/submissions/get_ungraded',
 	json: true
     }, function(error, response, body){
 	if(error) callback(error);
-//	console.log(response);
-//	console.log(body);
+	//	console.log(response);
+	//	console.log(body);
 	callback(null, body);//console.log(body);
     });
 }
@@ -190,8 +203,8 @@ function post(submission_id, message, callback){
 	json: true,
 	body: {"result" : message}
     }, function(error, response, body){
-//	if(error) console.log(error);
-//	else console.log(body);
+	//	if(error) console.log(error);
+	//	else console.log(body);
 	callback(null);
     });
 }
@@ -203,7 +216,7 @@ function getRandomString(){
     //the regex bit gets rid of the dashes in the string
     return require('node-uuid').v4().toString().replace(/-/g, '').toLowerCase();
 }
-    
+
 /*
   Returns the file extension for a given programming language name.
   
@@ -219,7 +232,7 @@ function getProgrammingLanguageExtension(languageName){
 
 function setup(obj, id, _callback){
 
-//    var id = getRandomString();
+    //    var id = getRandomString();
     if(!id) var id = getRandomString();
 
     var path = {cwd : 'scripts/' +  id};
@@ -249,7 +262,7 @@ function run(id, callback){
 }
 
 function teardown(id, callback){
-    child_process.exec('docker rmi caseymcguire/sandbox:' + id, function(error, stdout, stderr){
+    child_process.exec('docker rmi --force=true caseymcguire/sandbox:' + id, function(error, stdout, stderr){
 	console.log(stdout);
 	console.log(error);
 	console.log(stderr);
@@ -257,7 +270,14 @@ function teardown(id, callback){
     });
 }
 
-function kill(callback){
-
+/*
+  Kills the container with the given id after 10 seconds
+  TODO: make the timeout configurable
+*/
+function kill(id, callback){
+    child_process.exec('docker stop --time=10 caseymcguire/sandbox:' + id, function(error, stdout, stderr){
+	if(error) callback(error);
+	else callback(null);
+    });
 }
 
