@@ -90,12 +90,17 @@ function start(body, id, callback){
 		    console.log("===============");
 		    stdout = stdout.slice(0, 4);
 		    
-		    console.log(stderr);
-		    console.log(stdout === 'PASS');
-		    console.log(stdout);
+		    var result;
+		    try{
+			result = JSON.parse(stdout);
+		    }catch(err){
+			result = {result : -1};
+		    }
 		    
-		    if(stderr || stdout !== 'PASS') callback(null, id, FAIL);
-		    else callback(null, id, PASS);
+		    
+//		    if(stderr || stdout !== 'PASS') callback(null, id, FAIL);
+//		    else callback(null, id, PASS);
+		    
 		});
 		
 
@@ -110,7 +115,7 @@ function start(body, id, callback){
 
 	teardown(id, function(){
 	    console.log('all done!');
-	    callback();
+	    callback(id);
 	});
 	
     });
