@@ -67,7 +67,7 @@ function start(body, id, callback){
 
 		//kill the container after 10 seconds
 		var timeout = setTimeout(function(){
-		    kill(id, callback(new Error("timeout")));
+		    kill(id, callback(TIMEOUT));
 		}, 10000);
 		
 		
@@ -83,24 +83,24 @@ function start(body, id, callback){
 		process.on('close', function(code){
 		    console.log('process closed! with error code: ' + code);
 		    clearTimeout(timeout);
-		    //I should probably use some sort of coding system instead of string literals
+
 		    console.log("===============");
 		    console.log("Standard out");
 		    console.log(stdout);
 		    console.log("===============");
-		    stdout = stdout.slice(0, 4);
+		
 		    
 		    var result;
+
+
 		    try{
+			//	console.log(stdout);
 			result = JSON.parse(stdout);
 		    }catch(err){
 			result = {result : -1};
 		    }
 		    
-		    
-//		    if(stderr || stdout !== 'PASS') callback(null, id, FAIL);
-//		    else callback(null, id, PASS);
-		    
+		    callback(null, id, result);
 		});
 		
 
@@ -206,7 +206,7 @@ function post(submission_id, message, callback){
 	method: 'POST',
 	uri: 'http://localhost:3000/submissions/update/' + submission_id,
 	json: true,
-	body: {"result" : message}
+	body: message
     }, function(error, response, body){
 	//	if(error) console.log(error);
 	//	else console.log(body);
@@ -280,6 +280,7 @@ function teardown(id, callback){
   TODO: make the timeout configurable
 */
 function kill(id, callback){
+    console.log("have to kill the container");
     child_process.exec('docker stop --time=10 caseymcguire/sandbox:' + id, function(error, stdout, stderr){
 	if(error) callback(error);
 	else callback(null);
