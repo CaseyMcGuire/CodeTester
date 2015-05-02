@@ -13,10 +13,6 @@ var TIMEOUT = 2;
 var RUNTIME_ERROR = 3;
 var COMPILE_ERROR = 4;
 
-var RESULT = {
-    "code" : -1
-}
-
 
 if(require.main === module){
     query();
@@ -42,7 +38,7 @@ function query(){
 	else timeout = 0;
 
 	setTimeout(function(){
-	    console.log("ALL DONE");//query();
+	//    console.log("ALL DONE");
 	    query();
 	}, timeout);
     });
@@ -65,9 +61,14 @@ function start(body, id, callback){
 		var stdout = '';
 		var stderr;
 
+		var result;
+
 		//kill the container after 10 seconds
 		var timeout = setTimeout(function(){
-		    kill(id, callback(TIMEOUT));
+		    result = {result : TIMEOUT};
+		    kill(id, function(err){
+			console.log(err);
+		    });
 		}, 10000);
 		
 		
@@ -90,7 +91,7 @@ function start(body, id, callback){
 		    console.log("===============");
 		
 		    
-		    var result;
+//		    var result;
 
 
 		    try{
@@ -100,18 +101,18 @@ function start(body, id, callback){
 			result = {result : -1};
 		    }
 		    
-		    callback(null, id, result);
+		    callback(null, result);
 		});
 		
 
 	    });
 	},
-	function(id, result, callback){
+	function(result, callback){
 	    post(submission_id, result, function(err){
 		callback(null, id);
 	    });
 	}
-    ],function(err, id){
+    ],function(err, result){
 
 	teardown(id, function(){
 	    console.log('all done!');
@@ -232,6 +233,7 @@ function getProgrammingLanguageExtension(languageName){
     if(languageName === "ruby") return ".rb";
     else if(languageName === "python") return ".py";
     else if(languageName === "java") return ".java";
+    else if(languageName === "c") return ".c";
     else throw Error("invalid language name");
 }
 
@@ -261,16 +263,16 @@ function setup(obj, id, _callback){
 
 function run(id, callback){
     var command = [
-	'docker', 'run', '--rm=true', 'caseymcguire/sandbox:' + id, 'nodejs', '/code/run.js'
+	'docker', 'run', '--name', id, "-m=" + 50 + "m", '--ulimit', 'nproc=10:10' , '--rm=true', 'caseymcguire/sandbox:' + id, 'nodejs', '/code/run.js'
     ];
     callback(null, child_process.spawn(command[0], command.splice(1, command.length - 1)));
 }
 
 function teardown(id, callback){
     child_process.exec('docker rmi --force=true caseymcguire/sandbox:' + id, function(error, stdout, stderr){
-	console.log(stdout);
-	console.log(error);
-	console.log(stderr);
+//	console.log(stdout);
+//	console.log(error);
+//	console.log(stderr);
 	callback(null);
     });
 }
@@ -281,7 +283,7 @@ function teardown(id, callback){
 */
 function kill(id, callback){
     console.log("have to kill the container");
-    child_process.exec('docker stop --time=10 caseymcguire/sandbox:' + id, function(error, stdout, stderr){
+    child_process.exec('docker kill ' + id, function(error, stdout, stderr){
 	if(error) callback(error);
 	else callback(null);
     });
